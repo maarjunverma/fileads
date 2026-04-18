@@ -12,6 +12,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 async function startServer() {
+  console.log('--- Starting Express Server ---');
   const app = express();
   const PORT = 3000;
 
@@ -48,10 +49,11 @@ async function startServer() {
 
     try {
       // Save to Strapi (if configured)
-      if (process.env.STRAPI_URL && process.env.STRAPI_API_TOKEN) {
+      const strapiUrl = process.env.STRAPI_URL?.replace(/\/$/, '');
+      if (strapiUrl && process.env.STRAPI_API_TOKEN) {
         try {
           await axios.post(
-            `${process.env.STRAPI_URL}/api/leads`,
+            `${strapiUrl}/api/leads`,
             { data: leadData },
             {
               headers: {
@@ -85,6 +87,12 @@ async function startServer() {
       console.error('General error processing lead:', error);
       res.status(500).json({ error: 'Failed to process lead' });
     }
+  });
+
+  // Catch-all for /api routes to prevent falling through to Vite
+  app.all('/api/*', (req, res) => {
+    console.log(`[API 404] ${req.method} ${req.url} - No route found`);
+    res.status(404).json({ error: `Route ${req.method} ${req.url} not found` });
   });
 
   // Vite middleware for development
