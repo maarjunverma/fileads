@@ -30,7 +30,7 @@ async function startServer() {
   });
 
   // Handle both /api/finleads and /api/finleads/
-  app.post(['/api/finleads', '/api/finleads/'], async (req, res) => {
+  app.post(['api/finleads', '/api/finleads/'], async (req, res) => {
     try {
       const body = req.body;
       console.log("Lead:", body);
@@ -53,7 +53,7 @@ async function startServer() {
       if (process.env.STRAPI_URL && process.env.STRAPI_API_TOKEN) {
         try {
           await axios.post(
-            `${process.env.STRAPI_URL}/api/leads`,
+            `${process.env.STRAPI_URL}/api/finleads`,
             { data: leadData },
             {
               headers: {
