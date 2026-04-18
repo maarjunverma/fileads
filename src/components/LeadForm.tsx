@@ -25,32 +25,44 @@ export default function LeadForm() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!validate()) return;
-    
-    setStatus('loading');
+const handleSubmit = async (e: FormEvent) => {
+  e.preventDefault();
+  if (!validate()) return;
 
-    try {
-      const response = await axios.post('/api/finleads', formData);
+  setStatus('loading');
 
-      if (response.status === 200) {
-        setStatus('success');
-        setErrorMessage(null);
-        setFormData({ name: '', email: '', phone: '', service: 'Credit Card', message: '' });
-      } else {
-        setStatus('error');
-        setErrorMessage(response.data?.error || 'Failed to submit form');
+  try {
+    const response = await axios.post(
+      "https://api.madsag.in/api/finleads",
+      {
+        data: formData, // 🔥 REQUIRED FOR STRAPI
+      },
+      {
+        headers: {
+          Authorization: `Bearer YOUR_STRAPI_API_TOKEN`, // optional if public
+          "Content-Type": "application/json",
+        },
       }
-    } catch (error: any) {
-      console.error('Error submitting form:', error);
-      setStatus('error');
-      
-      // Extract detailed error from server response
-      const detail = error.response?.data?.error || error.message || 'Server connection failed';
-      setErrorMessage(detail);
-    }
-  };
+    );
+
+    setStatus('success');
+    setFormData({
+      name: '',
+      email: '',
+      phone: '',
+      service: 'Credit Card',
+      message: '',
+    });
+
+  } catch (error: any) {
+    console.error("❌ Error:", error.response?.data || error.message);
+
+    setStatus('error');
+    setErrorMessage(
+      error.response?.data?.error?.message || "Submission failed"
+    );
+  }
+};
 
   return (
     <section id="lead-form" className="py-24 bg-white px-6">
