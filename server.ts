@@ -78,14 +78,34 @@ async function startServer() {
           await axios.post(process.env.N8N_WEBHOOK_URL, leadData);
           console.log('n8n trigger sent');
         } catch (error: any) {
-          console.error('Error triggering n8n:', error.response?.status === 404 ? '404 Not Found - Please check your n8n Webhook URL' : error.message);
+          const n8nError = error.response?.status === 404 ? 'n8n Webhook Not Found' : error.message;
+          console.error('Error triggering n8n:', n8nError);
+          // We don't necessarily want to fail the whole request if n8n fails, 
+          // but we should log it. If you want it to fail, throw here.
         }
       }
 
       res.status(200).json({ success: true });
-    } catch (error) {
+    } catch (error: any) {
       console.error('General error processing lead:', error);
-      res.status(500).json({ error: 'Failed' });
+      
+      // Extract the most descriptive error message possible
+      let errorMessage = 'An unexpected error occurred';
+      
+      if (error.response?.data) {
+        // Handle Strapi style errors
+        errorMessage = error.response.data.error?.message || 
+                       error.response.data.error || 
+                       JSON.stringify(error.response.data);
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
+      res.status(500).json({ 
+        success: false, 
+        error: errorMessage,
+        type: error.response?.status ? 'Integration Error' : 'Server Error'
+      });
     }
   });
 

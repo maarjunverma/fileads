@@ -5,6 +5,7 @@ import axios from 'axios';
 
 export default function LeadForm() {
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState({
     name: '',
@@ -35,13 +36,19 @@ export default function LeadForm() {
 
       if (response.status === 200) {
         setStatus('success');
+        setErrorMessage(null);
         setFormData({ name: '', email: '', phone: '', service: 'Credit Card', message: '' });
       } else {
         setStatus('error');
+        setErrorMessage(response.data?.error || 'Failed to submit form');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error submitting form:', error);
       setStatus('error');
+      
+      // Extract detailed error from server response
+      const detail = error.response?.data?.error || error.message || 'Server connection failed';
+      setErrorMessage(detail);
     }
   };
 
@@ -203,9 +210,14 @@ export default function LeadForm() {
               </button>
 
               {status === 'error' && (
-                <p className="text-red-500 text-sm font-medium text-center">
-                  Something went wrong. Please try again later.
-                </p>
+                <div className="bg-red-50 border border-red-200 p-4 rounded-xl">
+                  <p className="text-red-600 text-sm font-bold text-center">
+                    Submission Error
+                  </p>
+                  <p className="text-red-500 text-xs text-center mt-1">
+                    {errorMessage || 'Something went wrong. Please try again later.'}
+                  </p>
+                </div>
               )}
             </form>
           )}
