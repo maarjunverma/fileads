@@ -18,8 +18,19 @@ async function startServer() {
   app.use(cors());
   app.use(express.json());
 
+  // Request logger
+  app.use((req, res, next) => {
+    console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+    next();
+  });
+
   // API Routes
-  app.post('/api/finleads', async (req, res) => {
+  app.get('/api/health', (req, res) => {
+    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  });
+
+  // Handle both /api/finleads and /api/finleads/
+  app.post(['/api/finleads', '/api/finleads/'], async (req, res) => {
     const { name, email, phone, service, message } = req.body;
 
     if (!name || !email || !phone) {

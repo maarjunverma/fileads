@@ -1,5 +1,6 @@
 import { motion } from 'motion/react';
 import { ArrowRight, ShieldCheck, TrendingUp, Zap } from 'lucide-react';
+import { partners } from '../data/partners';
 
 export default function Hero() {
   const scrollToForm = () => {
@@ -36,6 +37,23 @@ export default function Hero() {
             Get expert guidance on Credit Cards, Loans, and Insurance. 
             We help you choose the best financial products tailored to your needs.
           </p>
+
+          <div className="space-y-4">
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Our Top Partners</p>
+            <div className="flex flex-wrap gap-6 items-center opacity-40 grayscale hover:grayscale-0 transition-all duration-500">
+              {partners.slice(0, 4).map((partner) => (
+                <img 
+                  key={partner.name} 
+                  src={partner.logo} 
+                  alt={partner.name} 
+                  className="h-6 md:h-8 w-auto object-contain"
+                  referrerPolicy="no-referrer"
+                  loading="lazy"
+                />
+              ))}
+              <span className="text-xs font-bold text-gray-400">+ many more</span>
+            </div>
+          </div>
 
           <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
             <button 
@@ -107,8 +125,8 @@ export default function Hero() {
         >
           <div className="relative z-10 rounded-3xl overflow-hidden shadow-2xl">
             <img 
-              src="https://picsum.photos/seed/finance/800/1000" 
-              alt="Financial Advisor" 
+              src="https://images.unsplash.com/photo-1573163281514-8746059d47a4?auto=format&fit=crop&q=80&w=800&h=1000" 
+              alt="Financial Growth Advisor" 
               className="w-full h-auto object-cover"
               referrerPolicy="no-referrer"
               loading="lazy"
