@@ -103,8 +103,10 @@ export default function LeadForm() {
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-gray-700">Full Name</label>
+                  <label htmlFor="name" className="text-sm font-bold text-gray-700">Full Name</label>
                   <input
+                    id="name"
+                    name="name"
                     required
                     type="text"
                     placeholder="John Doe"
@@ -118,8 +120,10 @@ export default function LeadForm() {
                   {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-gray-700">Phone Number</label>
+                  <label htmlFor="phone" className="text-sm font-bold text-gray-700">Phone Number</label>
                   <input
+                    id="phone"
+                    name="phone"
                     required
                     type="tel"
                     placeholder="+91 98765 43210"
@@ -135,8 +139,10 @@ export default function LeadForm() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-bold text-gray-700">Email Address</label>
+                <label htmlFor="email" className="text-sm font-bold text-gray-700">Email Address</label>
                 <input
+                  id="email"
+                  name="email"
                   required
                   type="email"
                   placeholder="john@example.com"
@@ -151,8 +157,10 @@ export default function LeadForm() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-bold text-gray-700">Service Interested In</label>
+                <label htmlFor="service" className="text-sm font-bold text-gray-700">Service Interested In</label>
                 <select
+                  id="service"
+                  name="service"
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all appearance-none bg-white"
                   value={formData.service}
                   onChange={(e) => setFormData({ ...formData, service: e.target.value })}
@@ -167,8 +175,10 @@ export default function LeadForm() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-bold text-gray-700">Additional Message (Optional)</label>
+                <label htmlFor="message" className="text-sm font-bold text-gray-700">Additional Message (Optional)</label>
                 <textarea
+                  id="message"
+                  name="message"
                   rows={4}
                   placeholder="Tell us more about your requirements..."
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all resize-none"

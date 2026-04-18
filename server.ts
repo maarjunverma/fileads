@@ -30,7 +30,7 @@ async function startServer() {
   });
 
   // Handle both /api/finleads and /api/finleads/
-  app.post(['api/finleads', '/api/finleads/'], async (req, res) => {
+  app.post(['/api/finleads', '/api/finleads/'], async (req, res) => {
     try {
       const body = req.body;
       console.log("Lead:", body);
