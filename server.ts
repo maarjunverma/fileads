@@ -31,22 +31,24 @@ async function startServer() {
 
   // Handle both /api/finleads and /api/finleads/
   app.post(['/api/finleads', '/api/finleads/'], async (req, res) => {
-    const { name, email, phone, service, message } = req.body;
-
-    if (!name || !email || !phone) {
-      return res.status(400).json({ error: 'Name, email, and phone are required.' });
-    }
-
-    const leadData = {
-      name,
-      email,
-      phone,
-      service,
-      message,
-      timestamp: new Date().toISOString(),
-    };
-
     try {
+      const body = req.body;
+      console.log("Lead:", body);
+
+      const { name, email, phone, service, message } = body;
+
+      if (!name || !email || !phone) {
+        return res.status(400).json({ error: 'Name, email, and phone are required.' });
+      }
+
+      const leadData = {
+        name,
+        email,
+        phone,
+        service,
+        message,
+        timestamp: new Date().toISOString(),
+      };
       // Save to Strapi (if configured)
       if (process.env.STRAPI_URL && process.env.STRAPI_API_TOKEN) {
         try {
@@ -80,10 +82,10 @@ async function startServer() {
         }
       }
 
-      res.status(200).json({ message: 'Lead received successfully' });
+      res.status(200).json({ success: true });
     } catch (error) {
       console.error('General error processing lead:', error);
-      res.status(500).json({ error: 'Failed to process lead' });
+      res.status(500).json({ error: 'Failed' });
     }
   });
 
