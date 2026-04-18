@@ -16,22 +16,37 @@ async function startServer() {
   const app = express();
   const PORT = 3000;
 
-  app.use(cors());
+  app.use(cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+  }));
   app.use(express.json());
+  app.use(express.urlencoded({ extended: true }));
 
   // Request logger
   app.use((req, res, next) => {
-    console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
     next();
   });
 
   // API Routes
   app.get('/api/health', (req, res) => {
-    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+    res.json({ status: 'ok', timestamp: new Date().toISOString(), env: process.env.NODE_ENV });
   });
 
-  // Handle both /api/finleads and /api/finleads/
-  app.post(['/api/finleads', '/api/finleads/'], async (req, res) => {
+  app.get('/api/env-check', (req, res) => {
+    res.json({
+      strapiConfigured: !!(process.env.STRAPI_URL && process.env.STRAPI_API_TOKEN),
+      n8nConfigured: !!process.env.N8N_WEBHOOK_URL,
+      strapiUrlSet: !!process.env.STRAPI_URL,
+      strapiTokenSet: !!process.env.STRAPI_API_TOKEN,
+    });
+  });
+
+  // Most robust way to handle the finleads endpoint
+  const handleFinLeads = async (req: express.Request, res: express.Response) => {
+    console.log(`[API] Processing ${req.method} /api/finleads`);
     const { name, email, phone, service, message } = req.body;
 
     if (!name || !email || !phone) {
@@ -65,10 +80,6 @@ async function startServer() {
         } catch (error: any) {
           const strapiError = error.response?.data?.error || error.message;
           console.error('Error saving to Strapi:', strapiError);
-          // Detailed logging for debugging 400 errors
-          if (error.response?.status === 400) {
-            console.error('Strapi Validation Details:', JSON.stringify(error.response.data, null, 2));
-          }
         }
       }
 
@@ -78,15 +89,29 @@ async function startServer() {
           await axios.post(process.env.N8N_WEBHOOK_URL, leadData);
           console.log('n8n trigger sent');
         } catch (error: any) {
-          console.error('Error triggering n8n:', error.response?.status === 404 ? '404 Not Found - Please check your n8n Webhook URL' : error.message);
+          console.error('Error triggering n8n:', error.message);
         }
       }
 
-      res.status(200).json({ message: 'Lead received successfully' });
+      res.status(200).json({ status: 'success', message: 'Lead received successfully' });
     } catch (error) {
       console.error('General error processing lead:', error);
       res.status(500).json({ error: 'Failed to process lead' });
     }
+  };
+
+  // Handle finleads with multiple paths and methods to be bulletproof
+  app.all(['/api/finleads', '/api/finleads/'], (req, res, next) => {
+    if (req.method === 'OPTIONS') {
+      return res.sendStatus(200);
+    }
+    if (req.method === 'POST') {
+      return handleFinLeads(req, res);
+    }
+    if (req.method === 'GET') {
+      return res.json({ message: 'FinLeads API is ready for POST requests' });
+    }
+    next();
   });
 
   // Catch-all for /api routes to prevent falling through to Vite
