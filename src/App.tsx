@@ -12,6 +12,7 @@ import LeadForm from './components/LeadForm';
 import FAQ from './components/FAQ';
 import Footer from './components/Footer';
 import StickyCTA from './components/StickyCTA';
+import LeadPopup from './components/LeadPopup';
 
 export default function App() {
   return (
@@ -27,6 +28,7 @@ export default function App() {
       </main>
       <Footer />
       <StickyCTA />
+      <LeadPopup />
     </div>
   );
 }

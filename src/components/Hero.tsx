@@ -40,7 +40,7 @@ export default function Hero() {
 
           <div className="space-y-4">
             <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Our Top Partners</p>
-            <div className="flex flex-wrap gap-6 items-center opacity-40 grayscale hover:grayscale-0 transition-all duration-500">
+            <div className="flex flex-wrap gap-6 items-center opacity-60 grayscale hover:grayscale-0 transition-all duration-500">
               {partners.slice(0, 4).map((partner) => (
                 <img 
                   key={partner.name} 
