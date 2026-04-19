@@ -52,8 +52,9 @@ async function startServer() {
       // Save to Strapi (if configured)
       if (process.env.STRAPI_URL && process.env.STRAPI_API_TOKEN) {
         try {
+          const strapiBase = process.env.STRAPI_URL.replace(/\/$/, '');
           await axios.post(
-            `${process.env.STRAPI_URL}/api/finleads`,
+            `${strapiBase}/api/finleads`,
             { data: leadData },
             {
               headers: {
