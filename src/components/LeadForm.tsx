@@ -4,7 +4,7 @@ import { Send, CheckCircle2, Loader2 } from 'lucide-react';
 import axios from 'axios';
 
 // Replace with your actual hosted Strapi URL (e.g., https://api.yourdomain.com)
-const STRAPI_URL = 'http://localhost:1337'; 
+const STRAPI_URL = 'https://finlead.madsag.in/'; 
 
 export default function LeadForm() {
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
