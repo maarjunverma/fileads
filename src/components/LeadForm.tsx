@@ -3,6 +3,9 @@ import { motion } from 'motion/react';
 import { Send, CheckCircle2, Loader2 } from 'lucide-react';
 import axios from 'axios';
 
+// Replace with your actual hosted Strapi URL (e.g., https://api.yourdomain.com)
+const STRAPI_URL = 'http://localhost:1337'; 
+
 export default function LeadForm() {
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -25,44 +28,48 @@ export default function LeadForm() {
     return Object.keys(newErrors).length === 0;
   };
 
-const handleSubmit = async (e: FormEvent) => {
-  e.preventDefault();
-  if (!validate()) return;
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!validate()) return;
+    
+    setStatus('loading');
 
-  setStatus('loading');
-
-  try {
-    const response = await axios.post(
-      "https://api.madsag.in/api/finleads",
-      {
-        data: formData, // 🔥 REQUIRED FOR STRAPI
-      },
-      {
+    try {
+      /**
+       * IMPORTANT CHANGES:
+       * 1. Added full URL to avoid relative path issues.
+       * 2. Wrapped formData in { data: ... } for Strapi v4/v5.
+       * 3. Strapi usually pluralizes endpoints (finlead -> finleads). 
+       * Check your Content-Type Builder to confirm.
+       */
+      const response = await axios.post(`${STRAPI_URL}/api/finleads`, {
+        data: formData 
+      }, {
         headers: {
-          Authorization: `Bearer YOUR_STRAPI_API_TOKEN`, // optional if public
-          "Content-Type": "application/json",
-        },
+          'Content-Type': 'application/json',
+          // If you chose "Option 2 (API Token)" in my previous message, uncomment below:
+          // 'Authorization': `Bearer YOUR_STRAPI_API_TOKEN`
+        }
+      });
+
+      // Strapi returns 201 for successful creation
+      if (response.status === 200 || response.status === 201) {
+        setStatus('success');
+        setErrorMessage(null);
+        setFormData({ name: '', email: '', phone: '', service: 'Credit Card', message: '' });
+      } else {
+        setStatus('error');
+        setErrorMessage('Failed to submit form');
       }
-    );
-
-    setStatus('success');
-    setFormData({
-      name: '',
-      email: '',
-      phone: '',
-      service: 'Credit Card',
-      message: '',
-    });
-
-  } catch (error: any) {
-    console.error("❌ Error:", error.response?.data || error.message);
-
-    setStatus('error');
-    setErrorMessage(
-      error.response?.data?.error?.message || "Submission failed"
-    );
-  }
-};
+    } catch (error: any) {
+      console.error('Error submitting form:', error);
+      setStatus('error');
+      
+      // Extract detailed error message from Strapi's error response
+      const detail = error.response?.data?.error?.message || error.message || 'Server connection failed';
+      setErrorMessage(detail);
+    }
+  };
 
   return (
     <section id="lead-form" className="py-24 bg-white px-6">
