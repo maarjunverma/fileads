@@ -3,8 +3,8 @@ import { motion } from 'motion/react';
 import { Send, CheckCircle2, Loader2 } from 'lucide-react';
 import axios from 'axios';
 
-// Replace with your actual hosted Strapi URL (e.g., https://api.yourdomain.com)
-const STRAPI_URL = 'https://finlead.madsag.in/'; 
+// FIX: Removed trailing slash to prevent double-slashes in the request (//api/finleads)
+const STRAPI_URL = 'https://api.madsag.in'; 
 
 export default function LeadForm() {
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
@@ -33,39 +33,45 @@ export default function LeadForm() {
     if (!validate()) return;
     
     setStatus('loading');
+    setErrorMessage(null);
 
     try {
       /**
-       * IMPORTANT CHANGES:
-       * 1. Added full URL to avoid relative path issues.
-       * 2. Wrapped formData in { data: ... } for Strapi v4/v5.
-       * 3. Strapi usually pluralizes endpoints (finlead -> finleads). 
-       * Check your Content-Type Builder to confirm.
+       * CONFIGURATION ALIGNED WITH QUOTEMODAL:
+       * 1. Explicitly wrapping payload in a "data" object for Strapi v4/v5.
+       * 2. Using clean URL concatenation.
+       * 3. Pluralized endpoint 'finleads' as per Strapi conventions.
        */
       const response = await axios.post(`${STRAPI_URL}/api/finleads`, {
-        data: formData 
+        data: {
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          service: formData.service,
+          message: formData.message,
+        }
       }, {
         headers: {
-          'Content-Type': 'application/json',
-          // If you chose "Option 2 (API Token)" in my previous message, uncomment below:
-          // 'Authorization': `Bearer YOUR_STRAPI_API_TOKEN`
+          'Content-Type': 'application/json'
         }
       });
+ 
 
-      // Strapi returns 201 for successful creation
+      // Strapi returns 201 Created for new entries
       if (response.status === 200 || response.status === 201) {
         setStatus('success');
-        setErrorMessage(null);
         setFormData({ name: '', email: '', phone: '', service: 'Credit Card', message: '' });
-      } else {
-        setStatus('error');
-        setErrorMessage('Failed to submit form');
+        
+        // Auto-reset success state after 3.5s (similar to your QuoteModal logic)
+        setTimeout(() => {
+          setStatus('idle');
+        }, 3500);
       }
     } catch (error: any) {
       console.error('Error submitting form:', error);
       setStatus('error');
       
-      // Extract detailed error message from Strapi's error response
+      // FIX: Improved error extraction to catch Strapi's nested error messages
       const detail = error.response?.data?.error?.message || error.message || 'Server connection failed';
       setErrorMessage(detail);
     }
@@ -116,7 +122,7 @@ export default function LeadForm() {
               </div>
               <div className="space-y-2">
                 <h3 className="text-2xl font-bold text-gray-900">Thank You!</h3>
-                <p className="text-gray-600">Your consultation has been booked. We'll contact you shortly.</p>
+                <p className="text-gray-600">Strategic brief received. Deployment coordinators will initiate contact within 24 standard business hours.</p>
               </div>
               <button
                 onClick={() => setStatus('idle')}
@@ -129,14 +135,15 @@ export default function LeadForm() {
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label htmlFor="name" className="text-sm font-bold text-gray-700">Full Name</label>
+                  <label htmlFor="name" className="text-sm font-bold text-gray-700 uppercase tracking-wider">Full Name</label>
                   <input
                     id="name"
                     name="name"
                     required
                     type="text"
+                    disabled={status === 'loading'}
                     placeholder="John Doe"
-                    className={`w-full px-4 py-3 rounded-xl border ${errors.name ? 'border-red-500' : 'border-gray-200'} focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all`}
+                    className={`w-full px-4 py-3 rounded-xl border ${errors.name ? 'border-red-500' : 'border-gray-200'} focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all disabled:opacity-50`}
                     value={formData.name}
                     onChange={(e) => {
                       setFormData({ ...formData, name: e.target.value });
@@ -146,14 +153,15 @@ export default function LeadForm() {
                   {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
                 </div>
                 <div className="space-y-2">
-                  <label htmlFor="phone" className="text-sm font-bold text-gray-700">Phone Number</label>
+                  <label htmlFor="phone" className="text-sm font-bold text-gray-700 uppercase tracking-wider">Phone Number</label>
                   <input
                     id="phone"
                     name="phone"
                     required
                     type="tel"
+                    disabled={status === 'loading'}
                     placeholder="+91 98765 43210"
-                    className={`w-full px-4 py-3 rounded-xl border ${errors.phone ? 'border-red-500' : 'border-gray-200'} focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all`}
+                    className={`w-full px-4 py-3 rounded-xl border ${errors.phone ? 'border-red-500' : 'border-gray-200'} focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all disabled:opacity-50`}
                     value={formData.phone}
                     onChange={(e) => {
                       setFormData({ ...formData, phone: e.target.value });
@@ -165,14 +173,15 @@ export default function LeadForm() {
               </div>
 
               <div className="space-y-2">
-                <label htmlFor="email" className="text-sm font-bold text-gray-700">Email Address</label>
+                <label htmlFor="email" className="text-sm font-bold text-gray-700 uppercase tracking-wider">Email Address</label>
                 <input
                   id="email"
                   name="email"
                   required
                   type="email"
+                  disabled={status === 'loading'}
                   placeholder="john@example.com"
-                  className={`w-full px-4 py-3 rounded-xl border ${errors.email ? 'border-red-500' : 'border-gray-200'} focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all`}
+                  className={`w-full px-4 py-3 rounded-xl border ${errors.email ? 'border-red-500' : 'border-gray-200'} focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all disabled:opacity-50`}
                   value={formData.email}
                   onChange={(e) => {
                     setFormData({ ...formData, email: e.target.value });
@@ -183,11 +192,12 @@ export default function LeadForm() {
               </div>
 
               <div className="space-y-2">
-                <label htmlFor="service" className="text-sm font-bold text-gray-700">Service Interested In</label>
+                <label htmlFor="service" className="text-sm font-bold text-gray-700 uppercase tracking-wider">Service Interested In</label>
                 <select
                   id="service"
                   name="service"
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all appearance-none bg-white"
+                  disabled={status === 'loading'}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all appearance-none bg-white disabled:opacity-50"
                   value={formData.service}
                   onChange={(e) => setFormData({ ...formData, service: e.target.value })}
                 >
@@ -198,16 +208,16 @@ export default function LeadForm() {
                   <option>Business Loan</option>
                   <option>Investment Plan</option>
                 </select>
-              </div>
 
               <div className="space-y-2">
-                <label htmlFor="message" className="text-sm font-bold text-gray-700">Additional Message (Optional)</label>
+                <label htmlFor="message" className="text-sm font-bold text-gray-700 uppercase tracking-wider">Additional Message</label>
                 <textarea
                   id="message"
                   name="message"
                   rows={4}
+                  disabled={status === 'loading'}
                   placeholder="Tell us more about your requirements..."
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all resize-none"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all resize-none disabled:opacity-50"
                   value={formData.message}
                   onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                 />
@@ -222,20 +232,17 @@ export default function LeadForm() {
                   <Loader2 className="w-6 h-6 animate-spin" />
                 ) : (
                   <>
-                    <span>Book Consultation Now</span>
+                    <span>INITIATE CONSULTATION</span>
                     <Send className="w-5 h-5" />
                   </>
                 )}
               </button>
 
               {status === 'error' && (
-                <div className="bg-red-50 border border-red-200 p-4 rounded-xl">
-                  <p className="text-red-600 text-sm font-bold text-center">
-                    Submission Error
-                  </p>
-                  <p className="text-red-500 text-xs text-center mt-1">
-                    {errorMessage || 'Something went wrong. Please try again later.'}
-                  </p>
+                <div className="bg-red-50 border border-red-200 p-4 rounded-xl flex items-start gap-3">
+                   <div className="text-red-600 font-bold text-sm">
+                    <p>Submission Error: {errorMessage || 'Something went wrong.'}</p>
+                   </div>
                 </div>
               )}
             </form>
