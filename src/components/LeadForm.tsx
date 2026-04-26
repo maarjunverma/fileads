@@ -208,6 +208,7 @@ export default function LeadForm() {
                   <option>Business Loan</option>
                   <option>Investment Plan</option>
                 </select>
+                </div>
 
               <div className="space-y-2">
                 <label htmlFor="message" className="text-sm font-bold text-gray-700 uppercase tracking-wider">Additional Message</label>
